@@ -1,5 +1,4 @@
 using System.Text.RegularExpressions;
-using System.Xml;
 using AoC23.File;
 
 namespace AoC23;
@@ -7,21 +6,59 @@ namespace AoC23;
 public class Day2
 {
     private static List<int> ValidGames = new List<int>();
+
     public void Execute()
     {
         var games = ReadGames();
 
-        var validStones = new List<Stones>()
+        Part1(games);
+        Part2(games);
+    }
+
+    private void Part2(IEnumerable<Game> games)
+    {
+        var gamePowers = new List<int>();
+        
+        foreach (var game in games)
         {
-            new Stones(12, Colour.Red),
-            new Stones(13, Colour.Green),
-            new Stones(14, Colour.Blue)
+            var minSet = new Dictionary<Colour, int>
+            {
+                { Colour.Green, 0 },
+                { Colour.Red, 0 },
+                { Colour.Blue, 0 },
+            };
+            
+            foreach (var draw in game.Draws)
+            {
+                foreach (var set in draw.Stones)
+                {
+                    if(minSet[set.Colour] < set.Count)
+                    {
+                        minSet[set.Colour] = set.Count;
+                    }
+                }
+            }
+            gamePowers.Add(minSet[Colour.Green] * minSet[Colour.Blue] * minSet[Colour.Red]);
+        }
+        Console.WriteLine("Day 2 - Part 2");
+        Console.WriteLine("Total sum is:");
+        Console.WriteLine(gamePowers.Sum());
+    }
+
+    private static void Part1(IEnumerable<Game> games)
+    {
+        var validStones = new List<Stones>
+        {
+            new(12, Colour.Red),
+            new(13, Colour.Green),
+            new(14, Colour.Blue)
         };
         var validBag = new Draw(validStones);
         foreach (var game in games)
         {
             AddToGamesListIfValid(validBag, game);
         }
+
         Console.WriteLine("Day 2!");
         Console.WriteLine("Total sum is:");
         Console.WriteLine(ValidGames.Sum());
@@ -39,6 +76,7 @@ public class Day2
                 if (stone.Count > validStone.Count) return;
             }
         }
+
         ValidGames.Add(game.Id);
     }
 
@@ -59,10 +97,10 @@ public class Day2
                 foreach (var setStone in stones)
                 {
                     var digits = int.Parse(Regex.Match(setStone, @"\d+").Value);
-                    switch(setStone)
+                    switch (setStone)
                     {
                         case var blue when setStone.ToLowerInvariant().Contains("blue"):
-                            output.Add( new Stones(digits, Colour.Blue));
+                            output.Add(new Stones(digits, Colour.Blue));
                             break;
                         case var red when setStone.ToLowerInvariant().Contains("red"):
                             output.Add(new Stones(digits, Colour.Red));
@@ -72,8 +110,10 @@ public class Day2
                             break;
                     }
                 }
+
                 draws.Add(new Draw(output));
             }
+
             games.Add(new Game(i + 1, draws));
         }
 
