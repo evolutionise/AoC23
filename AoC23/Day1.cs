@@ -2,11 +2,11 @@
 
 namespace AoC23;
 
-public class Day1
+public class Day1(string textFile) : IDay(textFile)
 {
-    public void Execute()
+    public override void Execute()
     {
-        var data = FileFetcher.GetFileData(nameof(Day1));
+        var data = FileFetcher.GetFileData(textFile);
         var sum = 0;
         foreach (var line in data)
         {

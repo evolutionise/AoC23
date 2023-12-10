@@ -3,11 +3,11 @@ using AoC23.File;
 
 namespace AoC23;
 
-public class Day2
+public class Day2(string textFile) : IDay(textFile)
 {
     private static List<int> ValidGames = new List<int>();
 
-    public void Execute()
+    public override void Execute()
     {
         var games = ReadGames();
 
@@ -82,7 +82,7 @@ public class Day2
 
     private IEnumerable<Game> ReadGames()
     {
-        var data = FileFetcher.GetFileData(nameof(Day2)).ToList();
+        var data = FileFetcher.GetFileData(textFile).ToList();
         var games = new List<Game>();
         for (int i = 0; i < data.Count; i++)
         {
