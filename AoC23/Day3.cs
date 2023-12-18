@@ -21,6 +21,7 @@ public class Day3(string textFile) : IDay(textFile)
         var length = grid.GetLength(0);
         var width = grid.GetLength(1);
 
+        // Are we going down instead of across? Whoops ...
         for (int i = 0; i < length; i++)
         {
             for (int j = 0; j < width; j++)
@@ -41,15 +42,14 @@ public class Day3(string textFile) : IDay(textFile)
                         d = grid[i, ++index];
                     }
                     
-                    // TODO - inspect array neighbours to find if it's a valid part number
                     // Valid part number == adjacent to a symbol incl diagonally
                     var isValidPartNumber = InspectNeighboursForSymbols(grid, digits, i, j);
                     
-                    // TODO - can we skip the next digits if we've already checked? 
-                    // Am I overcomplicating it by trying to look at all of the digits?
-                    // Otherwise I'd have to look back to find the whole number, so I think I prefer this?
-
-                    // TODO - if it's valid, turn chars into a number and add it to list of valid part numbers
+                    if (isValidPartNumber)
+                    {
+                        partNumbers.Add(GetValueFromIntChars(digits));
+                        i += digits.Count;
+                    }
                 }
 
             }
@@ -58,14 +58,24 @@ public class Day3(string textFile) : IDay(textFile)
         return partNumbers;
     }
 
+    private int GetValueFromIntChars(List<char> digits)
+    {
+        return int.Parse(new string(digits.ToArray()));
+    }
+
     public bool InspectNeighboursForSymbols(char[,] grid, List<char> digits, int i, int j)
     {
         // Check line above
         // This is going to run unnecessarily over the first line twice but I think that's fine
         // I could just change the values but will look at that later
+
+        // Does this account for start of row?
+        // Should I just start at -1?
+        var len = i == 0
+            ? digits.Count + 1
+            : digits.Count + 2;
         
-        // TODO - the +2 doesn't account for 0 index, so need to re-think
-        for (var k = Math.Max(j - 1, 0); k < digits.Count + 2; k++)
+        for (var k = Math.Max(j - 1, 0); k < len; k++)
         {
             var l = Math.Max(i - 1, 0);
             if (IsValidSymbol(grid[l, k]))
