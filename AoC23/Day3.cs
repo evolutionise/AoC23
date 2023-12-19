@@ -12,9 +12,13 @@ public class Day3(string textFile) : IDay(textFile)
         var grid = ConstructGrid(data);
 
         var partNumbers = GetPartNumbers(grid);
+        
+        Console.WriteLine("Day 3 - Part 1");
+        Console.WriteLine("Total sum is:");
+        Console.WriteLine(partNumbers.Sum());
     }
 
-    private List<int> GetPartNumbers(char[,] grid)
+    public List<int> GetPartNumbers(char[,] grid)
     {
         var partNumbers = new List<int>();
 
@@ -29,17 +33,19 @@ public class Day3(string textFile) : IDay(textFile)
                 var c = grid[i, j];
                 var d = c;
 
-                var digits = new List<char>();
-                var index = j;
+
                 // is it a digit?
                 if (char.IsDigit(c))
                 {
+                    var digits = new List<char>();
+                    var index = i;
+
                     // figure out how many digits
-                    while (char.IsDigit(d) && index < length - 1)
+                    while (char.IsDigit(d) && index <= width - 1)
                     {
                         digits.Add(d);
-
-                        d = grid[i, ++index];
+                        // the increment is causing issues when it's right on the end
+                        d = grid[i, Math.Min(++index, width-1)];
                     }
                     
                     // Valid part number == adjacent to a symbol incl diagonally
@@ -47,8 +53,8 @@ public class Day3(string textFile) : IDay(textFile)
                     
                     if (isValidPartNumber)
                     {
-                        partNumbers.Add(GetValueFromIntChars(digits));
-                        i += digits.Count;
+                        partNumbers.Add(GetValueFromIntChars(digits, i, j));
+                        j += digits.Count;
                     }
                 }
 
@@ -58,39 +64,65 @@ public class Day3(string textFile) : IDay(textFile)
         return partNumbers;
     }
 
-    private int GetValueFromIntChars(List<char> digits)
+    private int GetValueFromIntChars(List<char> digits, int i, int index)
     {
-        return int.Parse(new string(digits.ToArray()));
+        try
+        {
+            return int.Parse(new string(digits.ToArray()));
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(digits);
+            Console.WriteLine(e);
+            throw;
+        }
     }
 
     public bool InspectNeighboursForSymbols(char[,] grid, List<char> digits, int i, int j)
     {
+        var gridLength = grid.GetLength(0);
+        var gridWidth = grid.GetLength(1);
         // Check line above
         // This is going to run unnecessarily over the first line twice but I think that's fine
         // I could just change the values but will look at that later
 
         // Does this account for start of row?
         // Should I just start at -1?
-        var len = i == 0
+        var len = j == 0
             ? digits.Count + 1
             : digits.Count + 2;
         
-        for (var k = Math.Max(j - 1, 0); k < len; k++)
+        for (var k = Math.Max(j - 1, 0); k < j + len; k++)
         {
             var l = Math.Max(i - 1, 0);
-            if (IsValidSymbol(grid[l, k]))
+            if (IsValidSymbol(grid[l, Math.Min(k, gridWidth - 1)]))
             {
                 return true;
             }
         }
         
         // Check adjacent on same line
-        // TODO: okay this is where a custom class starts to sound better tbh
         var length = grid.GetLength(0);
         // Left
         if (IsValidSymbol(grid[Math.Max(i - 1, 0), j])) return true;
         // Right
         if (IsValidSymbol(grid[Math.Min(i + digits.Count, length - 1), j])) return true;
+        
+        // Check below
+        if (i >= gridLength - 1)
+        {
+            return false;
+        }
+
+        for (var k = Math.Min(j - 1, gridWidth - 1); k < j + len; k++)
+        {
+            var l = Math.Max(i + 1, 0);
+            var w = Math.Min(Math.Max(k, 0), gridWidth - 1);
+            if (IsValidSymbol(grid[l, w]))
+            {
+                return true;
+            }
+        }
 
         return false;
     }
